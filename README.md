@@ -1,6 +1,5 @@
 # RemindMeBot
 
-test
 
 
 kappa123
