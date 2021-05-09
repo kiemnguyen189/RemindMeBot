@@ -19,6 +19,8 @@ async def on_ready():
     print(
         f'{client.user} has connected to: '
         f'{guild.name} (id: {guild.id}) '
+        f'{client.user} kappa123'
     )
 
 client.run(TOKEN)
+
