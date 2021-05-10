@@ -1,2 +1,6 @@
 # Ignore files related to API keys
 .env
+
+# Ignore local vscode settings
+.vscode/
+!.vscode/settings.json
