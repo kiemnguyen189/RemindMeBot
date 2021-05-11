@@ -24,13 +24,18 @@ async def on_ready():
 
 @client.event
 async def on_message(message):
+    # * Ignore messages sent by itself.
     if message.author == client.user:
         return
-    greeting = "Hello"
+    greeting = "Hi!"
     input = message.content
-    if "hello" in input.lower():
-        response = greeting
-        await message.channel.send(response)
+    # if "hello" in input.lower():
+    #     response = greeting
+    #     await message.channel.send(response)
+    # TODO: RegEx for inputs.
+    if input.lower().startswith('.h'):
+        await message.channel.send(greeting)
+
 
 client.run(TOKEN)
 
