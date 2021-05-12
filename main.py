@@ -2,6 +2,7 @@
 import os
 import re
 import discord
+import csv
 from dotenv import load_dotenv
 from datetime import datetime
 
@@ -35,17 +36,30 @@ async def on_message(message):
     #     await message.channel.send(response)
     # TODO: RegEx for inputs.
     if input.lower().startswith('/h'):
-        greeting += parseInput(input)   # ? Function to perform the RegEx
-        # TODO: Function to store parsed input
+        outputs = parseInput(input) # Fetches outputs from the user input using RegEx
+        greeting += outputs[0] # Adds user note to printed output
         # TODO: Check if input date and time is valid (datetime in the future, not a past datetime)
+        # TODO: Function to store parsed input
+        #if time and date value is valid, then do # ? storeInput(outputs)
+        storeInput(outputs)
+        
+
         await message.channel.send(greeting)
 
 # Parses the user input in the text channel
 # * Returns: A default output string response from the bot.
 def parseInput(input):
     output = ""
-    dateMatch = re.search(r'\d{2}-\d{2}-\d{4}', input)
-    timeMatch = re.search(r'\d{2}:\d{2}', input)
+    dateMatch = re.search(r'\d{2}-\d{2}-\d{4}', input) #Isolates date
+    timeMatch = re.search(r'\d{2}:\d{2}', input) #Isolates time
+
+    # Isolates message
+    noteMatch = input
+    noteMatch = re.sub(r'\d{2}-\d{2}-\d{4}',"", noteMatch)
+    noteMatch = re.sub(r'\d{2}:\d{2}:\d{2}',"", noteMatch)
+    noteMatch = str(noteMatch.replace("/h",""))
+    noteMatch = noteMatch.strip()
+
     # Match the date
     if dateMatch != None:
         date = datetime.strptime(dateMatch.group(), '%d-%m-%Y')
@@ -57,7 +71,17 @@ def parseInput(input):
         timeStr = time.strftime('%H:%M')
         output += " The time is: " + timeStr
     # TODO: Store the user note
-    return output
+    # Match the note
+    if noteMatch != None:
+        output += " The message is: " + noteMatch
+
+    outputs = [output, dateStr, timeStr, noteMatch] # Stores relevant outputs into a list
+    return outputs
+
+def storeInput(listOfInputs):
+    with open("alerts.csv", mode='a+', newline="") as datawriter: #opens a CSV, will create if it doesn't exist
+        datawriter = csv.writer(datawriter, delimiter=",")
+        datawriter.writerow([listOfInputs[1],listOfInputs[2],listOfInputs[3],False])
 
 client.run(TOKEN)
 
