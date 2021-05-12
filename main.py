@@ -1,10 +1,11 @@
 # bot.py
+import csv
 import os
 import re
-import discord
-import csv
-from dotenv import load_dotenv
 from datetime import datetime
+
+import discord
+from dotenv import load_dotenv
 
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
@@ -43,7 +44,6 @@ async def on_message(message):
         #if time and date value is valid, then do # ? storeInput(outputs)
         storeInput(outputs)
         
-
         await message.channel.send(greeting)
 
 # Parses the user input in the text channel
@@ -56,8 +56,11 @@ def parseInput(input):
     # Isolates message
     noteMatch = input
     noteMatch = re.sub(r'\d{2}-\d{2}-\d{4}',"", noteMatch)
-    noteMatch = re.sub(r'\d{2}:\d{2}:\d{2}',"", noteMatch)
+    noteMatch = re.sub(r'\d{2}:\d{2}',"", noteMatch)
     noteMatch = str(noteMatch.replace("/h",""))
+    noteMatch = noteMatch.strip()
+    if noteMatch.startswith(":"):
+        noteMatch = noteMatch[3:]
     noteMatch = noteMatch.strip()
 
     # Match the date
