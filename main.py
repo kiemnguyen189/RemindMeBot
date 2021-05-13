@@ -5,6 +5,7 @@ import re
 from datetime import datetime
 
 import discord
+from discord.ext import tasks
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -24,6 +25,7 @@ async def on_ready():
         f'{guild.name} (id: {guild.id}) '
         f'{client.user} kappa1234'
     )
+    await fetch_notes.start()
 
 @client.event
 async def on_message(message):
@@ -45,6 +47,12 @@ async def on_message(message):
         storeInput(outputs)
         
         await message.channel.send(greeting)
+
+@tasks.loop(seconds=60) # task runs every 60 seconds
+async def fetch_notes():
+    string = "In Africa, every 60 seconds, a minute passes"
+    channel = client.get_channel(841088520927182901) #channel ID
+    await channel.send(row)
 
 # Parses the user input in the text channel
 # * Returns: A default output string response from the bot.
@@ -85,6 +93,7 @@ def storeInput(listOfInputs):
     with open("alerts.csv", mode='a+', newline="") as datawriter: #opens a CSV, will create if it doesn't exist
         datawriter = csv.writer(datawriter, delimiter=",")
         datawriter.writerow([listOfInputs[1],listOfInputs[2],listOfInputs[3],False])
+
 
 client.run(TOKEN)
 
