@@ -13,6 +13,14 @@ load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 GUILD = os.getenv('DISCORD_GUILD')
 
+global superHost, superUser, superPassword
+
+superHost = "localhost"
+superUser = "root"
+superPassword = "MySQL123"
+
+
+
 client = discord.Client()
 
 @client.event
@@ -51,15 +59,15 @@ async def on_message(message):
 
 # Fetches the notes from the database and prints any one who's conditions are met
 # * Returns: A reminder for the note when the time is right
-@tasks.loop(seconds=60) # task runs every 60 seconds
+@tasks.loop(seconds=10) # task runs every x seconds
 async def fetch_notes():
     channel = client.get_channel(841088520927182901) #channel ID
     try: #creates connection with local MySQL server
         with connect(
-            host="localhost",
-            user="root",
-            password="MySQL123",
-            database="alerts"
+            host= superHost,
+            user= superUser,
+            password = superPassword,
+            database= "alerts"
         ) as connection:
             queryToWrite = "SELECT * FROM alerts.alert_store WHERE sent = 0 ORDER BY dates asc, times asc;" #selects only unsent messages from table, sorted by date and time so earliest first
             with connection.cursor() as cursor:
@@ -90,10 +98,10 @@ async def fetch_notes():
 def update_notes(toDel):
     try:
         with connect(
-            host="localhost",
-            user="root",
-            password="MySQL123",
-            database="alerts"
+            host= superHost,
+            user= superUser,
+            password = superPassword,
+            database= "alerts"
         ) as connection:
 
             queryToWrite = "UPDATE alerts.alert_store SET sent = True WHERE id ='" + str(toDel) + "';"
@@ -144,10 +152,10 @@ def parseInput(input):
 def storeInput(listOfInputs):
     try: #creates connection with local MySQL server
         with connect( 
-            host="localhost",
-            user="root",
-            password="MySQL123",
-            database="alerts"
+            host= superHost,
+            user= superUser,
+            password = superPassword,
+            database= "alerts"
         ) as connection: #formulates a query to write to the database 
             queryToWrite = "INSERT INTO `alert_store` (dates, times, note, sent) VALUES ('" + listOfInputs[1] + "','" + listOfInputs[2] + "','" + listOfInputs[3] + "',False);" #forming query
             with connection.cursor() as cursor:
