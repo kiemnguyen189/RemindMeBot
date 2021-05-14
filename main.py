@@ -20,7 +20,6 @@ superUser = "root"
 superPassword = "MySQL123"
 
 
-
 client = discord.Client()
 
 @client.event
@@ -41,6 +40,7 @@ async def on_message(message):
     # * Ignore messages sent by itself.
     if message.author == client.user:
         return
+    print(message.author)
     greeting = "Hi!"
     input = message.content
     # if "hello" in input.lower():
@@ -108,7 +108,6 @@ def update_notes(toDel):
             with connection.cursor() as cursor:
                 cursor.execute(queryToWrite)
                 connection.commit() #commiting query. Required.
-
     except Error as e:
         print(e)        
 
