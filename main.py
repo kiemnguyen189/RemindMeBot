@@ -40,22 +40,21 @@ async def on_message(message):
     # * Ignore messages sent by itself.
     if message.author == client.user:
         return
-    print(message.author)
     greeting = "Hi!"
     input = message.content
-    # if "hello" in input.lower():
-    #     response = greeting
-    #     await message.channel.send(response)
-    # TODO: RegEx for inputs.
+    userID = message.author.id
     if input.lower().startswith('/h'):
-        outputs = parseInput(input) # Fetches outputs from the user input using RegEx
-        greeting += outputs[0] # Adds user note to printed output
-        # TODO: Check if input date and time is valid (datetime in the future, not a past datetime)
-        # TODO: Function to store parsed input
-        #if time and date value is valid, then do # ? storeInput(outputs)
-        storeInput(outputs)
-        
-        await message.channel.send(greeting)
+        outputs = parseInput(input,userID) # Fetches outputs from the user input using RegEx
+        try:
+            greeting += outputs[0] # Adds user note to printed output
+            # TODO: Check if input date and time is valid (datetime in the future, not a past datetime)
+            # TODO: Function to store parsed input
+            #if time and date value is valid, then do # ? storeInput(outputs)
+            storeInput(outputs)
+            await message.channel.send(greeting)
+        except:
+            print("Input Error")
+
 
 # Fetches the notes from the database and prints any one who's conditions are met
 # * Returns: A reminder for the note when the time is right
@@ -69,7 +68,7 @@ async def fetch_notes():
             password = superPassword,
             database= "alerts"
         ) as connection:
-            queryToWrite = "SELECT * FROM alerts.alert_store WHERE sent = 0 ORDER BY dates asc, times asc;" #selects only unsent messages from table, sorted by date and time so earliest first
+            queryToWrite = "SELECT * FROM alerts.alert_store WHERE sent = 0 ORDER BY date_notify asc, time_notify asc;" #selects only unsent messages from table, sorted by date and time so earliest first
             with connection.cursor() as cursor:
                 cursor.execute(queryToWrite)
                 result = cursor.fetchall() #fetches all the data
@@ -77,15 +76,17 @@ async def fetch_notes():
                     list(row) #casts the data as a list
 
                     #manipulates the time and date into a datetime format
-                    comapreDatetime = str(row[1]) + " " + str(row[2])
-                    comapreDatetime = datetime.strptime(comapreDatetime, "%Y-%m-%d %H:%M:%S")
+                    compareDatetime = str(row[1]) + " " + str(row[2])
+                    compareDatetime = datetime.strptime(compareDatetime, "%Y-%m-%d %H:%M:%S")
 
                     #gets current datetime
                     currentDatetime = datetime.now()
+                    #print(currentDatetime >= compareDatetime, currentDatetime, compareDatetime)
 
                     #if the current time is equal or 'later' than the comparator, send a message to the channel
-                    if (currentDatetime >= comapreDatetime) and row[-1] == 0:
-                        reminderString = "Reminder: " + row[-2]
+                    if (currentDatetime >= compareDatetime) and row[-1] == 0:
+                        reminderString = " <@" + str(row[-4]) + "> " + row[-2]
+                        print(reminderString)
                         await channel.send(reminderString)
                         update_notes(row[0]) #updates the data in the table by using the primary key which is 'id'
     except Error as e:
@@ -103,7 +104,6 @@ def update_notes(toDel):
             password = superPassword,
             database= "alerts"
         ) as connection:
-
             queryToWrite = "UPDATE alerts.alert_store SET sent = True WHERE id ='" + str(toDel) + "';"
             with connection.cursor() as cursor:
                 cursor.execute(queryToWrite)
@@ -117,7 +117,7 @@ def update_notes(toDel):
 # * Date string
 # * Time string
 # * User note
-def parseInput(input):
+def parseInput(input, userID):
     output = ""
     dateMatch = re.search(r'\d{2}-\d{2}-\d{4}', input) #Isolates date
     timeMatch = re.search(r'\d{2}:\d{2}', input) #Isolates time
@@ -131,6 +131,8 @@ def parseInput(input):
     if noteMatch.startswith(":"):
         noteMatch = noteMatch[3:]
     noteMatch = noteMatch.strip()
+    noteMatch = noteMatch.replace("'","\\'")
+    noteMatch = noteMatch.replace('"','\\"')
 
     # Match the date
     if dateMatch != None:
@@ -143,13 +145,17 @@ def parseInput(input):
         time = datetime.strptime(timeMatch.group(), '%H:%M')
         timeStr = time.strftime('%H:%M')
         output += " at " + timeStr
-    # TODO: Store the user note
+    if (dateMatch != None) and (timeMatch != None):
+        delta =  datetime.combine(date.date(), time.time()) - datetime.now()
+        dateNow = date.now()
+        timeNow = time.now()
     # Match the note
     if noteMatch != None:
         output += ". The message is: " + noteMatch
 
-    outputs = [output, dateStr, timeStr, noteMatch] # Stores relevant outputs into a list
-    return outputs
+    if not str(delta).startswith("-"):
+        outputs = [output, dateStr, timeStr, dateNow, timeNow, userID, delta, noteMatch] # Stores relevant outputs into a list
+        return outputs
 
 #stores the user input into the mysql table
 def storeInput(listOfInputs):
@@ -160,7 +166,7 @@ def storeInput(listOfInputs):
             password = superPassword,
             database= "alerts"
         ) as connection: #formulates a query to write to the database 
-            queryToWrite = "INSERT INTO `alert_store` (dates, times, note, sent) VALUES ('" + listOfInputs[1] + "','" + listOfInputs[2] + "','" + listOfInputs[3] + "',False);" #forming query
+            queryToWrite = "INSERT INTO `alert_store` (date_notify, time_notify, date_created, time_created, userID, delta, note, sent) VALUES ('" + listOfInputs[1] + "','" + listOfInputs[2] + "','" + str(listOfInputs[3]) + "','" + str(listOfInputs[4]) +  "','" + str(listOfInputs[5]) + "','" + str(listOfInputs[6]) + "','" + listOfInputs[7] + "',False);"  #forming query
             with connection.cursor() as cursor:
                 cursor.execute(queryToWrite)
                 connection.commit() #commiting query. Required.
