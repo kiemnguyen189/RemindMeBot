@@ -113,7 +113,11 @@ def update_notes(toDel):
         print(e)        
 
 # Parses the user input in the text channel
-# * Returns: A default output string response from the bot.
+# Returns: A list containing:
+# * Text output
+# * Date string
+# * Time string
+# * User note
 def parseInput(input):
     output = ""
     dateMatch = re.search(r'\d{2}-\d{2}-\d{4}', input) #Isolates date
