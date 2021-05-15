@@ -173,5 +173,5 @@ def storeInput(listOfInputs):
     except Error as e:
         print(e)
 
-client.run(TOKEN)
+client.run(TOKEN)  
 
