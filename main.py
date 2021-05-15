@@ -124,8 +124,8 @@ def parseInput(input, userID):
 
     # Isolates message
     noteMatch = input
-    noteMatch = re.sub(r'\d{2}-\d{2}-\d{4}',"", noteMatch)
-    noteMatch = re.sub(r'\d{2}:\d{2}',"", noteMatch)
+    noteMatch = re.sub(r'\d{2}-\d{2}-\d{4}',"", noteMatch,1)
+    noteMatch = re.sub(r'\d{2}:\d{2}',"", noteMatch,1)
     noteMatch = str(noteMatch.replace("/h",""))
     noteMatch = noteMatch.strip()
     if noteMatch.startswith(":"):
