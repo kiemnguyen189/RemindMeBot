@@ -3,3 +3,4 @@
 
 # Ignore local vscode settings
 .vscode/*
+.vscode/settings.json
