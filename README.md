@@ -1,11 +1,11 @@
 # RemindMeBot
 
-**Project Description**
+##**Project Description**
 
 This project was an attempt to use the Discord API in conjunction with a database system (MySQL) to develop an application in which a user can create alerts for some time in the future which are then recalled by the bot at the specified time.
 
 
-**Technologies Used**
+##**Technologies Used**
 
 Discord API - https://discord.com/developers/docs/intro
 
